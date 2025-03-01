@@ -9,7 +9,14 @@ import Footer from './components/Footer';
 
 function App() {
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div 
+      className="min-h-screen"
+      style={{ 
+        background: 'linear-gradient(to bottom, #f9fafb, #f3f4f6)',
+        minHeight: '100vh',
+        overflowX: 'hidden'
+      }}
+    >
       <Header />
       <HeroSection />
       <FeaturesSection />
