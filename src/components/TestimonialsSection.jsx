@@ -4,16 +4,36 @@ import React, { useState, useEffect, useRef } from 'react';
 const TestimonialCard = ({ image, name, role, quote, isActive, isNext, isPrev }) => {
   const [isHovered, setIsHovered] = useState(false);
   
+  // Generate a unique color for each testimonial based on name
+  const getColorFromName = (name) => {
+    const colors = [
+      { primary: '#3b82f6', secondary: '#60a5fa', accent: '#1d4ed8' }, // Blue
+      { primary: '#10b981', secondary: '#34d399', accent: '#047857' }, // Green
+      { primary: '#f59e0b', secondary: '#fbbf24', accent: '#b45309' }, // Amber
+      { primary: '#8b5cf6', secondary: '#a78bfa', accent: '#6d28d9' }  // Purple
+    ];
+    
+    // Simple hash function to get consistent color for each name
+    const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
+  };
+  
+  const colors = getColorFromName(name);
+  
   return (
     <div 
       style={{
         backgroundColor: 'white',
         padding: '2rem',
         borderRadius: '1rem',
-        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05)',
+        boxShadow: isActive && isHovered 
+          ? `0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px ${colors.primary}30`
+          : isActive 
+            ? '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05)'
+            : '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
         transition: 'all 0.6s ease',
         transform: isActive 
-          ? 'scale(1) translateX(0)' 
+          ? isHovered ? 'scale(1.02) translateX(0)' : 'scale(1) translateX(0)' 
           : isNext 
             ? 'scale(0.85) translateX(50%)' 
             : isPrev 
@@ -27,13 +47,36 @@ const TestimonialCard = ({ image, name, role, quote, isActive, isNext, isPrev })
         width: '100%',
         zIndex: isActive ? 3 : isNext || isPrev ? 2 : 1,
         pointerEvents: isActive ? 'auto' : 'none',
-        border: '1px solid rgba(229, 231, 235, 0.7)',
+        border: isActive 
+          ? isHovered 
+            ? `1px solid ${colors.primary}40` 
+            : '1px solid rgba(229, 231, 235, 0.9)'
+          : '1px solid rgba(229, 231, 235, 0.7)',
         display: 'flex',
         flexDirection: 'column',
+        background: isActive && isHovered 
+          ? `linear-gradient(to bottom right, white, ${colors.secondary}10)` 
+          : 'white',
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Decorative top accent */}
+      <div 
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '4px',
+          background: `linear-gradient(to right, ${colors.primary}, ${colors.secondary})`,
+          borderTopLeftRadius: '1rem',
+          borderTopRightRadius: '1rem',
+          opacity: isActive ? 1 : 0.3,
+          transition: 'opacity 0.3s ease'
+        }}
+      />
+      
       <div style={{ flex: 1 }}>
         <div 
           style={{
@@ -47,9 +90,10 @@ const TestimonialCard = ({ image, name, role, quote, isActive, isNext, isPrev })
               top: '-1.5rem',
               left: '-0.5rem',
               fontSize: '4rem',
-              color: 'rgba(22, 163, 74, 0.1)',
+              color: isActive ? `${colors.primary}20` : 'rgba(22, 163, 74, 0.1)',
               fontFamily: 'Georgia, serif',
-              lineHeight: 1
+              lineHeight: 1,
+              transition: 'color 0.3s ease'
             }}
           >
             "
@@ -58,10 +102,11 @@ const TestimonialCard = ({ image, name, role, quote, isActive, isNext, isPrev })
             style={{
               fontSize: '1rem',
               lineHeight: '1.6',
-              color: 'rgb(55, 65, 81)',
+              color: isActive && isHovered ? '#111827' : 'rgb(55, 65, 81)',
               position: 'relative',
               zIndex: 1,
-              fontStyle: 'italic'
+              fontStyle: 'italic',
+              transition: 'color 0.3s ease'
             }}
           >
             {quote}
@@ -75,29 +120,44 @@ const TestimonialCard = ({ image, name, role, quote, isActive, isNext, isPrev })
           alignItems: 'center',
           marginTop: 'auto',
           paddingTop: '1rem',
-          borderTop: '1px solid rgba(229, 231, 235, 0.7)'
+          borderTop: `1px solid ${isActive && isHovered ? `${colors.secondary}30` : 'rgba(229, 231, 235, 0.7)'}`
         }}
       >
-        <img 
-          src={image} 
-          alt={`${name}, ${role}`} 
-          loading="lazy"
+        <div
           style={{
             width: '3rem',
             height: '3rem',
             borderRadius: '9999px',
             marginRight: '0.75rem',
-            objectFit: 'cover',
-            border: '2px solid rgb(22, 163, 74)',
-            boxShadow: '0 0 0 2px rgba(22, 163, 74, 0.2)'
+            position: 'relative',
+            overflow: 'hidden',
+            boxShadow: isActive 
+              ? `0 0 0 2px ${colors.primary}, 0 0 0 4px ${colors.primary}30`
+              : '0 0 0 2px rgb(22, 163, 74), 0 0 0 4px rgba(22, 163, 74, 0.2)',
+            transition: 'all 0.3s ease',
+            transform: isActive && isHovered ? 'scale(1.05)' : 'scale(1)'
           }}
-        />
+        >
+          <img 
+            src={image} 
+            alt={`${name}, ${role}`} 
+            loading="lazy"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              transition: 'transform 0.5s ease',
+              transform: isActive && isHovered ? 'scale(1.1)' : 'scale(1)'
+            }}
+          />
+        </div>
         <div>
           <h4 
             style={{
               fontWeight: '700',
               fontSize: '1rem',
-              color: 'rgb(17, 24, 39)'
+              color: isActive && isHovered ? colors.accent : 'rgb(17, 24, 39)',
+              transition: 'color 0.3s ease'
             }}
           >
             {name}
@@ -105,13 +165,30 @@ const TestimonialCard = ({ image, name, role, quote, isActive, isNext, isPrev })
           <p 
             style={{
               fontSize: '0.75rem',
-              color: 'rgb(22, 163, 74)'
+              color: isActive ? colors.primary : 'rgb(22, 163, 74)',
+              transition: 'color 0.3s ease'
             }}
           >
             {role}
           </p>
         </div>
       </div>
+      
+      {/* Decorative corner accent */}
+      {isActive && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '10px',
+            right: '10px',
+            width: '40px',
+            height: '40px',
+            opacity: isHovered ? 0.15 : 0.05,
+            transition: 'opacity 0.3s ease',
+            background: `radial-gradient(circle, ${colors.primary} 0%, transparent 70%)`
+          }}
+        />
+      )}
     </div>
   );
 };
@@ -121,6 +198,7 @@ const TestimonialsSection = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const autoplayRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   
   // Check screen size on mount and resize
   useEffect(() => {
@@ -130,6 +208,10 @@ const TestimonialsSection = () => {
     
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
+    
+    // Check if user prefers dark mode
+    const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setIsDarkMode(localStorage.getItem('darkMode') === 'true' || prefersDarkMode);
     
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
@@ -187,11 +269,62 @@ const TestimonialsSection = () => {
       id="testimonials" 
       style={{
         padding: isMobile ? '3rem 1rem' : '6rem 2rem',
-        background: 'linear-gradient(to bottom, white, #f9fafb)',
+        background: isDarkMode 
+          ? 'linear-gradient(to bottom, #1f2937, #111827)'
+          : 'linear-gradient(to bottom, white, #f9fafb)',
         position: 'relative',
         overflow: 'hidden'
       }}
     >
+      {/* Uganda-inspired background patterns */}
+      <div 
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          opacity: 0.03,
+          backgroundImage: `url('/uganda-pattern.svg')`,
+          backgroundSize: '400px',
+          pointerEvents: 'none',
+          zIndex: 1
+        }}
+      />
+      
+      {/* Decorative elements inspired by Ugandan crafts */}
+      <div 
+        style={{
+          position: 'absolute',
+          top: '5%',
+          right: '5%',
+          width: '150px',
+          height: '150px',
+          opacity: 0.05,
+          backgroundImage: `url('/uganda-craft.svg')`,
+          backgroundSize: 'contain',
+          backgroundRepeat: 'no-repeat',
+          pointerEvents: 'none',
+          zIndex: 1
+        }}
+      />
+      
+      <div 
+        style={{
+          position: 'absolute',
+          bottom: '5%',
+          left: '5%',
+          width: '120px',
+          height: '120px',
+          opacity: 0.05,
+          backgroundImage: `url('/uganda-symbol.svg')`,
+          backgroundSize: 'contain',
+          backgroundRepeat: 'no-repeat',
+          pointerEvents: 'none',
+          zIndex: 1
+        }}
+      />
+      
       <div 
         style={{
           maxWidth: '1280px',
@@ -201,14 +334,62 @@ const TestimonialsSection = () => {
           zIndex: 10
         }}
       >
-        <div style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 3rem' }}>
+        {/* Dark mode toggle */}
+        <button
+          onClick={() => {
+            const newMode = !isDarkMode;
+            setIsDarkMode(newMode);
+            localStorage.setItem('darkMode', newMode);
+          }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0.5rem',
+            borderRadius: '9999px',
+            color: isDarkMode ? 'white' : '#4b5563',
+            zIndex: 20
+          }}
+          aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+        >
+          {isDarkMode ? (
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          )}
+        </button>
+
+        <div style={{ 
+          textAlign: 'center', 
+          maxWidth: '800px', 
+          margin: '0 auto 3rem',
+          color: isDarkMode ? 'white' : 'inherit'
+        }}>
           <span 
             style={{
               display: 'inline-block',
               padding: '0.5rem 1rem',
               borderRadius: '2rem',
-              backgroundColor: 'rgba(22, 163, 74, 0.1)',
-              color: 'rgb(22, 163, 74)',
+              backgroundColor: isDarkMode ? 'rgba(22, 163, 74, 0.2)' : 'rgba(22, 163, 74, 0.1)',
+              color: isDarkMode ? '#4ade80' : 'rgb(22, 163, 74)',
               fontWeight: '600',
               fontSize: '0.875rem',
               marginBottom: '1rem',
@@ -224,7 +405,7 @@ const TestimonialsSection = () => {
               lineHeight: '1.2',
               fontWeight: '800',
               marginBottom: '1.5rem',
-              color: '#111827',
+              color: isDarkMode ? 'white' : '#111827',
               letterSpacing: '-0.025em'
             }}
           >
@@ -234,7 +415,7 @@ const TestimonialsSection = () => {
             style={{
               fontSize: isMobile ? '0.875rem' : '1rem',
               lineHeight: '1.7',
-              color: '#4b5563',
+              color: isDarkMode ? '#d1d5db' : '#4b5563',
               maxWidth: '42rem',
               margin: '0 auto'
             }}
